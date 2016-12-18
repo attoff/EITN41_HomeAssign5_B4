@@ -53,6 +53,8 @@ public class ASN1 {
         int total_length = (version.length + p.length + q.length + e.length + n.length + d.length + exp1.length + exp2.length + coeff.length);
 
         BigInteger tmp = new BigInteger(String.valueOf(total_length));
+        System.out.println("len " + total_length);
+        System.out.println(tmp);
         byte[] length = tmp.toByteArray();
 
         byte[] result_byte = new byte[first.length + length.length + total_length];
@@ -79,7 +81,7 @@ public class ASN1 {
         pos += exp2.length;
         System.arraycopy(coeff, 0, result_byte, pos, coeff.length);
 
-        System.out.println(byteToHex(result_byte).length()/2);
+        System.out.println(byteToHex(result_byte));
         return Base64.getEncoder().encodeToString(result_byte);
 
     }
@@ -89,7 +91,6 @@ public class ASN1 {
         String number_hex = number.toString(16);
         byte[] number_bytes = number.toByteArray();
         int len = number_bytes.length;
-        String result = "";
         byte[] result_byte = null;
 
         if (len > 127) {
@@ -102,11 +103,24 @@ public class ASN1 {
 
 
             BigInteger tmp = new BigInteger(String.valueOf(len));
-            byte[] octetTwo = tmp.toByteArray();
-            tmp = new BigInteger(String.valueOf(128+octetTwo.length));
-            byte[] octetOne = tmp.toByteArray();
+            byte[] octetTwo = null;
+            if (checkIfPaddingIsNeeded(Integer.toHexString(len))) {
+                octetTwo = hexToByte(0 + Integer.toHexString(len));
+
+            } else {
+                octetTwo = hexToByte(Integer.toHexString(len));
+            }
+            tmp = new BigInteger(String.valueOf(128 + octetTwo.length));
+            byte[] octetOne = null;
+            if (checkIfPaddingIsNeeded(Integer.toHexString(octetTwo.length + 128))) {
+                octetOne = hexToByte(0 + Integer.toHexString(octetTwo.length + 128));
+
+            } else {
+                octetOne = hexToByte(Integer.toHexString(octetTwo.length + 128));
+            }
 
             result_byte = new byte[type.length + octetOne.length + octetTwo.length + number_bytes.length];
+
             System.arraycopy(type, 0, result_byte, 0, type.length);
             System.arraycopy(octetOne, 0, result_byte, type.length, octetOne.length);
             System.arraycopy(octetTwo, 0, result_byte, type.length + octetOne.length, octetTwo.length);
@@ -116,11 +130,9 @@ public class ASN1 {
             byte[] bytelen = null;
             byte[] type = {02};
 
-            if (checkIfPaddingIsNeeded(number_hex.substring(0, 1))) {
-                result = "02" + Integer.toHexString(len) + number_hex;
+            if (checkIfNegPaddingIsNeeded(number_hex.substring(0, 1))) {
                 bytelen = new byte[]{(byte) len};
             } else {
-                result = "02" + Integer.toHexString(len + 1) + "00" + number_hex;
                 len = len + 1;
                 bytelen = new byte[]{(byte) len};
 
@@ -159,12 +171,20 @@ public class ASN1 {
         return result;
     }
 
-    private static boolean checkIfPaddingIsNeeded(String substring) {
+    private static boolean checkIfNegPaddingIsNeeded(String substring) {
         if (!substring.contains("9") || !substring.contains("8") || !substring.contains("a") ||
                 !substring.contains("b") || !substring.contains("c") || !substring.contains("d") || !substring.contains("f")) {
             return true;
         } else {
             return false;
+        }
+    }
+
+    private static boolean checkIfPaddingIsNeeded(String string) {
+        if (string.length() % 2 == 0) {
+            return false;
+        } else {
+            return true;
         }
     }
 }
