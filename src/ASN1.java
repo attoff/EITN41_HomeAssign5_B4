@@ -53,8 +53,6 @@ public class ASN1 {
         int total_length = (version.length + p.length + q.length + e.length + n.length + d.length + exp1.length + exp2.length + coeff.length);
 
         BigInteger tmp = new BigInteger(String.valueOf(total_length));
-        System.out.println("len " + total_length);
-        System.out.println(tmp);
         byte[] length = tmp.toByteArray();
 
         byte[] result_byte = new byte[first.length + length.length + total_length];
@@ -81,7 +79,7 @@ public class ASN1 {
         pos += exp2.length;
         System.arraycopy(coeff, 0, result_byte, pos, coeff.length);
 
-        System.out.println(byteToHex(result_byte));
+        System.out.println(byteToHex(result_byte).length()/2);
         return Base64.getEncoder().encodeToString(result_byte);
 
     }
@@ -105,7 +103,8 @@ public class ASN1 {
 
             BigInteger tmp = new BigInteger(String.valueOf(len));
             byte[] octetTwo = tmp.toByteArray();
-            byte[] octetOne = hexToByte(Integer.toHexString(128 + octetTwo.length));
+            tmp = new BigInteger(String.valueOf(128+octetTwo.length));
+            byte[] octetOne = tmp.toByteArray();
 
             result_byte = new byte[type.length + octetOne.length + octetTwo.length + number_bytes.length];
             System.arraycopy(type, 0, result_byte, 0, type.length);
