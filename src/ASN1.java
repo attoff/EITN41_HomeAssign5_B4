@@ -57,6 +57,31 @@ public class ASN1 {
         System.out.println(tmp);
         byte[] length = tmp.toByteArray();
 
+
+        if (total_length > 127) {
+
+            length = new byte[length.length + 1];
+
+            byte[] octetTwo = null;
+            if (checkIfPaddingIsNeeded(Integer.toHexString(total_length))) {
+                octetTwo = hexToByte(0 + Integer.toHexString(total_length));
+
+            } else {
+                octetTwo = hexToByte(Integer.toHexString(total_length));
+            }
+            byte[] octetOne = null;
+            if (checkIfPaddingIsNeeded(Integer.toHexString(octetTwo.length + 128))) {
+                octetOne = hexToByte(0 + Integer.toHexString(octetTwo.length + 128));
+
+            } else {
+                octetOne = hexToByte(Integer.toHexString(octetTwo.length + 128));
+            }
+
+            System.arraycopy(octetOne, 0, length, 0, octetOne.length);
+            System.arraycopy(octetTwo, 0, length, octetOne.length, octetTwo.length);
+        }
+
+
         byte[] result_byte = new byte[first.length + length.length + total_length];
         int pos = 0;
         System.arraycopy(first, 0, result_byte, pos, first.length);
@@ -102,7 +127,6 @@ public class ASN1 {
             }
 
 
-            BigInteger tmp = new BigInteger(String.valueOf(len));
             byte[] octetTwo = null;
             if (checkIfPaddingIsNeeded(Integer.toHexString(len))) {
                 octetTwo = hexToByte(0 + Integer.toHexString(len));
@@ -110,7 +134,6 @@ public class ASN1 {
             } else {
                 octetTwo = hexToByte(Integer.toHexString(len));
             }
-            tmp = new BigInteger(String.valueOf(128 + octetTwo.length));
             byte[] octetOne = null;
             if (checkIfPaddingIsNeeded(Integer.toHexString(octetTwo.length + 128))) {
                 octetOne = hexToByte(0 + Integer.toHexString(octetTwo.length + 128));
